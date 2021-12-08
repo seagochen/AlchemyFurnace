@@ -27,20 +27,20 @@ class NetworkDetectedResult(object):
         self.confidences = confidences
 
         # counting the real size of bounding boxes
-        self.bounding_boxes = bounding_boxes * 4  # 4 coordinates of bounding boxes
+        self.bounding_boxes = bounding_boxes  # 4 coordinates of bounding boxes
 
         # assign tensor dataset to the object detection result
         if tensor_grids is None:
             # shape of [confidences, bounding_boxes, objects, width (cols), height (rows)]
-            self.grids = torch.zeros(
-                self.confidences + self.bounding_boxes + self.object_categories,
+            self.tensor = torch.zeros(
+                self.confidences + self.bounding_boxes * 4 + self.object_categories,
                 self.grids_cols, self.grids_rows, dtype=torch.float32)
         else:
             # convert the dataset type to float32
-            self.grids = tensor_grids.float()
+            self.tensor = tensor_grids.float()
 
         # reshape the tensor dataset to [confidences x bounding_boxes x objects, width, height]
-        self.grids = self.grids.reshape(-1, self.grids_cols, self.grids_rows)
+        self.tensor = self.tensor.reshape(-1, self.grids_cols, self.grids_rows)
 
         # set cursor to the grids
         self.cursor = GridDetectionResult(
@@ -61,25 +61,44 @@ class NetworkDetectedResult(object):
             raise ValueError("object_categories, bounding_boxes, confidences must not be zero!")
 
         # flatten the tensor to 1D and calculate the size
-        flatten_size = self.grids.reshape(-1).shape[0]
+        flatten_size = self.tensor.reshape(-1).shape[0]
 
         # check the flatten tensor size
         if flatten_size != self.grids_rows * self.grids_cols * \
-                (self.confidences + self.bounding_boxes + self.object_categories):
+                (self.confidences + self.bounding_boxes * 4 + self.object_categories):
             # raise value error
             raise ValueError("grid size is not correct!")
 
-    def focus(self, grid_x: int = 0, grid_y: int = 0) -> GridDetectionResult:
+    def focus_cursor(self, grid_x: int = 0, grid_y: int = 0) -> GridDetectionResult:
         # get the grid from the tensor dataset
-        self.cursor.focus_on(self.grids[:, grid_x, grid_y])
+        self.cursor.focus_on(self.tensor[:, grid_x, grid_y])
         return self.cursor
+
+    def focus_tensor(self, grid_x: int = 0, grid_y: int = 0) -> torch.Tensor:
+        return self.tensor[:, grid_x, grid_y]
 
     def clear(self) -> None:
         """
         清空网格数据
         """
         # clear the tensor dataset
-        self.grids.fill_(0)
+        self.tensor.fill_(0)
+
+    def __str__(self) -> str:
+        output_str = ""
+
+        # print out the tensor dataset
+        for x in range(self.grids_cols):
+            for y in range(self.grids_rows):
+                # get grid from grids
+                grid = self.focus_cursor(x, y)
+
+                # print grids
+                output_str += "grid: {}, {}, confidence: {}, object_category: {}, bounding_box: {}\n".format(
+                    x, y, grid.get_confidence(0), grid.get_object_category(), grid.get_bounding_box(0))
+            output_str += "\n"
+
+        return output_str
 
 
 def test():
@@ -95,7 +114,7 @@ def test():
                                   confidences=confidences, bounding_boxes=bounding_boxes,
                                   object_categories=object_categories)
     # get grid from grids
-    grid = grids.focus(2, 2)
+    grid = grids.focus_cursor(2, 2)
 
     # update the dataset
     grid.set_confidence(0, 11)
@@ -103,16 +122,7 @@ def test():
     grid.set_bounding_box(0, (0, -9, 1.5, 1.5))
 
     # print out the tensor dataset
-    for x in range(grids_cols):
-        for y in range(grids_rows):
-            # get grid from grids
-            grid = grids.focus(x, y)
-
-            # print grids
-            print("grid: {}, {}, confidence: {}, object_category: {}, bounding_box: {}".format(
-                x, y, grid.get_confidence(0), grid.get_object_category(), grid.get_bounding_box(0)))
-
-        print("")
+    print(grids)
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from SimpleMNISTDetection.dataset.ModifiedDataset import MNISTWrapperDataset
+from SimpleMNISTDetection.ModifiedDataset import MNISTWrapperDataset
 
 # global variables
 batch_size = 64
@@ -105,7 +105,7 @@ def test(model, device, test_loader):
 
 def run_train_and_test_demo():
     # import model
-    from SimpleMNISTDetection.model.CNNNetwork import ConvolutionalNeuralNetwork
+    from SimpleMNISTDetection.CNNNetwork import ConvolutionalNeuralNetwork
 
     # define model
     model = ConvolutionalNeuralNetwork(grids_cols, grids_rows, confidences, bounding_boxes, object_categories)

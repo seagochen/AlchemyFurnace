@@ -65,7 +65,7 @@ def grids_coord(rect_pts: tuple, spatial_size: tuple, grid_size: tuple, alpha=0.
             "grid_i": grid_x, "grid_j": grid_y}
 
 
-def yolo_coord(pts: tuple, grid_size: tuple, alpha=0., beta=1., gamma=1.) -> tuple:
+def yolo_coord(pts: any, grid_size: tuple, alpha=0., beta=1., gamma=1.) -> tuple:
     """
     对于类似于YOLO的bbox表示方式（网格引索，相对中心点坐标，bbox长宽）转化为一般的bbox坐标（左上角坐标，右下角坐标）
 

@@ -36,16 +36,16 @@ class GridDetectionResult(object):
     def get_object_category(self) -> tuple:
         # find the max value and index
         max_value, max_index = torch.max(self.obj_tensor, 0)
-        return max_value, max_index
+        return max_index, max_value
 
-    def set_object_category(self, ind: int) -> None:
+    def set_object_category(self, ind: int, obj_confidence: float = 1.) -> None:
         # zero the object category
         self.obj_tensor.zero_()
 
         # set the object category
-        self.obj_tensor[ind] = 1
+        self.obj_tensor[ind] = obj_confidence
 
-    def get_bounding_box(self, ind: int) -> tuple:
+    def get_bounding_box(self, ind: int) -> torch.Tensor:
         # get the bounding box by index
         return self.bbox_tensor[ind * 4:ind * 4 + 4]
 

@@ -1,13 +1,12 @@
 from typing import Callable, Optional
 
 import cv2
-import torch
 import numpy as np
 from PIL import Image
 from torchvision import datasets
 
 from CvTools import ImageConverter as converter
-from SimpleMNISTDetection.dataset.YoloGrids import YoloGrids
+from GridSystem.YoloGrids import YoloGrids
 
 
 class MNISTWrapperDataset(datasets.MNIST):
@@ -80,7 +79,7 @@ class MNISTWrapperDataset(datasets.MNIST):
 
 
 def test():
-    data_dir = '../../data/MNIST'
+    data_dir = '../data/MNIST'
     dataset = MNISTWrapperDataset(root=data_dir, train=True, download=False)
 
     # show image
