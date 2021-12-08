@@ -51,8 +51,9 @@ def train(model, device, train_loader, optimizer, epoch):
     # train parameters
     model.train()  # set model to train mode
 
-    # criterion
-    criterion = nn.CrossEntropyLoss()
+    # criterion and device auto-chosen
+    criterion = nn.CrossEntropyLoss().to(device)
+    model = model.to(device)
 
     # train the model
     for batch_idx, (data, target) in enumerate(train_loader):
@@ -81,8 +82,9 @@ def test(model, device, test_loader):
     test_loss = 0
     correct = 0
 
-    # criterion
-    criterion = nn.CrossEntropyLoss()
+    # criterion and device auto-chosen
+    criterion = nn.CrossEntropyLoss().to(device)
+    model = model.to(device)
 
     # test the model
     with torch.no_grad():
@@ -109,16 +111,10 @@ def run_train_and_test_demo():
     model = ConvolutionalNeuralNetwork(grids_cols, grids_rows, confidences, bounding_boxes, object_categories)
 
     # define optimizer
-    # optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.5)
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
-    # optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     # define device
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-    # auto chose device
-    model = model.to(device)
-    optimizer = optimizer.to(device)
 
     # train model
     for epoch in range(1, epochs + 1):

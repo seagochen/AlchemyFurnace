@@ -12,3 +12,6 @@ class YoloGrids(object):
             bounding_boxes=bounding_boxes,
             object_categories=object_categories)
 
+    def use_yolo_style_mark(self, target, left_x, top_y, right_x, bottom_y):
+
+        return target
