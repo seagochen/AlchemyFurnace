@@ -1,0 +1,7 @@
+siki
+opencv-python
+torch
+torchvision
+torchtext
+matplotlib
+pillow
