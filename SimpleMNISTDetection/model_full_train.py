@@ -5,10 +5,10 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from SimpleMNISTDetection.ModifiedDataset import MNISTWrapperDataset
+from SimpleMNISTDetection.dataset.ModifiedDataset import MNISTWrapperDataset
 
 # global variables
-batch_size = 64
+batch_size = 4
 epochs = 10
 grids_cols = 1
 grids_rows = 1
@@ -68,7 +68,7 @@ def train(model, device, train_loader, optimizer, epoch):
         loss.backward()
         optimizer.step()
 
-        if batch_idx % 100 == 0:
+        if batch_idx % 10 == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                        100. * batch_idx / len(train_loader), loss.item()))
@@ -105,10 +105,12 @@ def test(model, device, test_loader):
 
 def run_train_and_test_demo():
     # import model
-    from SimpleMNISTDetection.CNNNetwork import ConvolutionalNeuralNetwork
+    # from SimpleMNISTDetection.model.CNNNetwork import ConvolutionalNeuralNetwork
+    from SimpleMNISTDetection.model.YoloNetwork import SimpleYoloNetwork
 
     # define model
-    model = ConvolutionalNeuralNetwork(grids_cols, grids_rows, confidences, bounding_boxes, object_categories)
+    # model = SimpleYoloNetwork(grids_cols, grids_rows, confidences, bounding_boxes, object_categories)
+    model = SimpleYoloNetwork()
 
     # define optimizer
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
