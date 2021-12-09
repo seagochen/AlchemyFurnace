@@ -3,31 +3,37 @@ import torch
 
 class SimpleYoloNetwork(torch.nn.Module):
 
-    def __init__(self):
+    def __init__(self, grids_size=(1, 1), confidences=0, boxes=0, categories=10):
         super().__init__()
 
-        # step 1: process image (1, 3, 448, 448) with convolution layers
-        self.conv_layer1 = torch.nn.Sequential(
+        # compute final output data size
+        out_features = grids_size[0] * grids_size[1] * (confidences + boxes * 4 + categories)
+
+        # step 1: processing image with convolution layer
+        # input data size is (B, C: 3, H: 448, W: 448)
+        self.conv_1 = torch.nn.Sequential(
             torch.nn.Conv2d(in_channels=3, out_channels=64, kernel_size=(7, 7), stride=(2, 2), padding=7 // 2),
             # activate
             torch.nn.BatchNorm2d(64),
             torch.nn.LeakyReLU(0.1),
             # max pool
             torch.nn.MaxPool2d(kernel_size=2, stride=2)
-        )  # output size (1, 64, 112, 112)
+        )  # output size (B, C: 64, H: 112, W: 112)
 
-        # step 2: process tensor (1, 64, 112, 112) with convolution layers
-        self.conv_layer2 = torch.nn.Sequential(
+        # step 2: processing image with convolution layer
+        # input data size is (B, C: 64, H: 112, W: 112)
+        self.conv_2 = torch.nn.Sequential(
             torch.nn.Conv2d(in_channels=64, out_channels=192, kernel_size=(3, 3), stride=(1, 1), padding=3 // 2),
             # activate
             torch.nn.BatchNorm2d(192),
             torch.nn.LeakyReLU(0.1),
             # max pool
             torch.nn.MaxPool2d(kernel_size=2, stride=2)
-        )  # output size (1, 192, 56, 56)
+        )  # output size (B, C: 192, H: 56, W: 56)
 
-        # step 3: process tensor (1, 192, 56, 56) with convolution layers
-        self.conv_layer3 = torch.nn.Sequential(
+        # step 3: processing image with convolution layer
+        # input data size is (B, C: 192, H: 56, W: 56)
+        self.conv_3 = torch.nn.Sequential(
             # 3.1
             torch.nn.Conv2d(in_channels=192, out_channels=128, kernel_size=(1, 1), stride=(1, 1), padding=1 // 2),
             # 3.2
@@ -41,10 +47,11 @@ class SimpleYoloNetwork(torch.nn.Module):
             torch.nn.LeakyReLU(0.1),
             # max pool
             torch.nn.MaxPool2d(kernel_size=2, stride=2)
-        )  # output size (1, 512, 28, 28)
+        )  # output size (B, C: 512, H: 28, W: 28)
 
-        # step 4. process tensor (1, 512, 28, 28) with convolution layers
-        self.conv_layer4 = torch.nn.Sequential(
+        # step 4: processing image with convolution layer
+        # input data size is (B, C: 512, H: 28, W: 28)
+        self.conv_4 = torch.nn.Sequential(
             # 4.1 - 4.2 x 4
             torch.nn.Conv2d(in_channels=512, out_channels=256, kernel_size=(1, 1), stride=(1, 1), padding=1 // 2),
             torch.nn.Conv2d(in_channels=256, out_channels=512, kernel_size=(3, 3), stride=(1, 1), padding=3 // 2),
@@ -63,10 +70,11 @@ class SimpleYoloNetwork(torch.nn.Module):
             torch.nn.LeakyReLU(0.1),
             # max pool
             torch.nn.MaxPool2d(kernel_size=2, stride=2)
-        )  # output size (1, 1024, 14, 14)
+        )  # output size (B, C: 1024, H: 14, W: 14)
 
-        # step 5. process tensor (1, 14, 14, 1024) with convolution layers
-        self.conv_layer5 = torch.nn.Sequential(
+        # step 5: processing image with convolution layer
+        # input data size is (B, C: 1024, H: 14, W: 14)
+        self.conv_5 = torch.nn.Sequential(
             # 5.1 - 5.2 x 2
             torch.nn.Conv2d(in_channels=1024, out_channels=512, kernel_size=(1, 1), stride=(1, 1), padding=1 // 2),
             torch.nn.Conv2d(in_channels=512, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=3 // 2),
@@ -79,45 +87,48 @@ class SimpleYoloNetwork(torch.nn.Module):
             # activate
             torch.nn.BatchNorm2d(1024),
             torch.nn.LeakyReLU(0.1)
-        )  # output size (1, 1024, 7, 7)
+        )  # output size (B, C: 1024, H: 7, W: 7)
 
-        # step 6 process tensor (1, 1024, 7, 7) with convolution layers
-        self.conv_layer6 = torch.nn.Sequential(
+        # step 6: processing image with convolution layer
+        # input data size is (B, C: 1024, H: 7, W: 7)
+        self.conv_6 = torch.nn.Sequential(
             # 6.1
             torch.nn.Conv2d(in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=3 // 2),
             torch.nn.Conv2d(in_channels=1024, out_channels=1024, kernel_size=(3, 3), stride=(1, 1), padding=3 // 2),
             # activate
             torch.nn.BatchNorm2d(1024),
             torch.nn.LeakyReLU(0.1)
-        )  # output size (1, 1024, 7, 7)
+        )  # output size (B, C: 1024, H: 7, W: 7)
 
-        # step 7 process flatted tensor (1, 1024, 7, 7) with linear layer
-        self.conn_layer1 = torch.nn.Sequential(
+        # step 7: processing image with linear layer
+        # input data size is (B, C: 1024 * 7 * 7)
+        self.fc_7 = torch.nn.Sequential(
             torch.nn.Linear(in_features=7 * 7 * 1024, out_features=4096),
             # activate
             torch.nn.Dropout(),
             torch.nn.LeakyReLU(0.1)
-        )  # output size (1, 4096)
+        )  # output size (B, C: 4096)
 
-        # step 8 finally output
-        self.conn_layer2 = torch.nn.Sequential(
-            torch.nn.Linear(in_features=4096, out_features=10),
+        # step 8: processing image with linear layer
+        # input data size is (B, C: 4096)
+        self.fc_8 = torch.nn.Sequential(
+            torch.nn.Linear(in_features=4096, out_features=out_features),
             # activate
             torch.nn.LeakyReLU(0.1)
-        )
+        )  # output size (B, C: out_features)
 
     def forward(self, data):
         # get the dimensions of input dataset
         B, C, H, W = data.shape
 
-        data = self.conv_layer1(data)
-        data = self.conv_layer2(data)
-        data = self.conv_layer3(data)
-        data = self.conv_layer4(data)
-        data = self.conv_layer5(data)
-        data = self.conv_layer6(data)
-        data = self.conn_layer1(data.reshape(B, -1))
-        data = self.conn_layer2(data)
+        data = self.conv_1(data)
+        data = self.conv_2(data)
+        data = self.conv_3(data)
+        data = self.conv_4(data)
+        data = self.conv_5(data)
+        data = self.conv_6(data)
+        data = self.fc_7(data.reshape(B, -1))
+        data = self.fc_8(data)
         return data
 
 
