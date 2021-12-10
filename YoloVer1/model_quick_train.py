@@ -3,14 +3,14 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from SimpleMNISTDetection.dataset.ModifiedDataset import MNISTWrapperDataset
+from YoloVer1.dataset.MNISTDataset import MNISTDataset
 
 # global variables
 batch_size = 4
-grids_cols = 1
-grids_rows = 1
-confidences = 0
-bounding_boxes = 0
+epochs = 10
+grids_size = (6, 6)
+confidences = 1
+bounding_boxes = 2
 object_categories = 10
 data_dir = '../data/MNIST'
 
@@ -22,7 +22,7 @@ transform = transforms.Compose([
 ])
 
 # training dataset
-train_dataset = MNISTWrapperDataset(root=data_dir,
+train_dataset = MNISTDataset(root=data_dir,
                                     train=True,
                                     download=True,
                                     transform=transform)
@@ -63,7 +63,7 @@ def run_train_and_test_demo():
     # define optimizer
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
 
-    # get data and target
+    # get dataset and target
     for batch_idx, (data, target) in enumerate(train_loader):
 
         # train model in simple way

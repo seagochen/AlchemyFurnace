@@ -4,10 +4,10 @@ import cv2
 import numpy as np
 from torchvision import datasets
 
-from SimpleMNISTDetection.CvTools import ImageConvertor as converter
+from YoloVer1.tools import ImageConvertor as converter
 
 
-class MNISTWrapperDataset(datasets.MNIST):
+class MNISTDataset(datasets.MNIST):
 
     def __init__(self,
                  root: str,
@@ -79,17 +79,16 @@ class MNISTWrapperDataset(datasets.MNIST):
 
 
 def test():
-    data_dir = '../data/MNIST'
-    dataset = MNISTWrapperDataset(root=data_dir, train=True, download=False)
+    data_dir = "../data/MNIST"
+    dataset = MNISTDataset(root=data_dir, train=True, download=True)
 
     # show image
     for i in range(len(dataset)):
         img, target = dataset[i]
         img = converter.img_to_cv(img)
 
-        print(target, img.shape)
-        # cv2.imshow('img', converter.img_to_cv(img))
-        # cv2.waitKey(0)
+        cv2.imshow('img', converter.img_to_cv(img))
+        cv2.waitKey(0)
 
 
 if __name__ == '__main__':

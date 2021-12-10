@@ -1,23 +1,22 @@
 import torch
-from SimpleMNISTDetection.CvTools.NetworkDetectedResult import NetworkDetectedResult
-from SimpleMNISTDetection.CvTools import BoundingBox as bbox
+from YoloVer1.grids.NetworkDetectedResult import NetworkDetectedResult
+from YoloVer1.grids import BoundingBox as bbox
 
 
 class YoloGrids(NetworkDetectedResult):
 
-    def __init__(self, grids_cols, grids_rows, confidences, bounding_boxes, object_categories,
+    def __init__(self, grids_size, confidences, bounding_boxes, object_categories,
                  spatial_size: tuple = (448, 448), alpha: float = 0., beta: float = 224., gamma: float = 1.):
 
         # super constructor
-        super().__init__(grids_cols=grids_cols,
-                         grids_rows=grids_rows,
+        super().__init__(grids_size=grids_size,
                          confidences=confidences,
                          bounding_boxes=bounding_boxes,
                          object_categories=object_categories)
 
         # keep the parameters
         self.spatial_size = spatial_size
-        self.grid_size = (grids_cols, grids_rows)
+        self.grid_size = grids_size
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
@@ -90,26 +89,25 @@ class YoloGrids(NetworkDetectedResult):
 
 def test():
     # Assume we have 8x8 grids, 10 object category, 2 bounding boxes for each grid and 1 confidence
-    grids_cols = 8
-    grids_rows = 8
+    grids_size = (8, 8)
     object_categories = 10
     bounding_boxes = 2
     confidences = 1
 
     # create the grids for yolo detection model
-    target_grids = YoloGrids(grids_cols=grids_cols, grids_rows=grids_rows,
+    target_grids = YoloGrids(grids_size=grids_size,
                              confidences=confidences,
                              object_categories=object_categories,
                              bounding_boxes=bounding_boxes)
 
-    pre_grids = YoloGrids(grids_cols=grids_cols, grids_rows=grids_rows,
+    pre_grids = YoloGrids(grids_size=grids_size,
                           confidences=confidences,
                           object_categories=object_categories,
                           bounding_boxes=bounding_boxes)
 
     # set the target and pred
-    t_true = target_grids.set_yolo_target(target=8, left_x=33, top_y=40, right_x=89, bottom_y=96)
-    t_pred = pre_grids.set_yolo_pre(confidence=0.9,
+    target_grids.set_yolo_target(target=8, left_x=33, top_y=40, right_x=89, bottom_y=96)
+    pre_grids.set_yolo_pre(confidence=0.9,
                            obj_ind=5, obj_confidence=0.3,
                            bbox_ind=0, cent_x=0.3, cent_y=0.3, bbox_w=0.5, bbox_h=0.5,
                            grid_i=2, grid_j=2)

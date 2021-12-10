@@ -1,5 +1,5 @@
 import torch
-from SimpleMNISTDetection.CvTools.GridDetectionResult import GridDetectionResult
+from YoloVer1.grids.GridDetectionResult import GridDetectionResult
 
 
 class NetworkDetectedResult(object):
@@ -8,12 +8,11 @@ class NetworkDetectedResult(object):
     用统一的格式保存物体识别结果，避免由于算法不同或者处理疏忽导致的意外情况
     """
 
-    def __init__(self, tensor_grids=None, grids_cols=1, grids_rows=1,
+    def __init__(self, tensor_grids=None, grids_size=(1, 1),
                  confidences=1, bounding_boxes=1, object_categories=1) -> None:
         """
         :param tensor_grids: 物体识别结果的tensor数据, 可以为空
-        :param grids_cols: 物体识别网格的列数，不得为空，默认为1
-        :param grids_rows: 物体识别网格的行数，不得为空，默认为1
+        :param grids_size: 物体识别网格的维度，不得为空，默认为(1, 1)
         :param object_categories: 物体类别数，不得为空，默认为1
         :param bounding_boxes: 物体框数，不得为空，默认为1
         :param confidences: 置信度数，不得为空，默认为1
@@ -21,8 +20,7 @@ class NetworkDetectedResult(object):
         super().__init__()
 
         # basic info of the object detection tensor
-        self.grids_cols = grids_cols
-        self.grids_rows = grids_rows
+        self.grids_size = grids_size
         self.object_categories = object_categories
         self.confidences = confidences
 
@@ -34,13 +32,13 @@ class NetworkDetectedResult(object):
             # shape of [confidences, bounding_boxes, objects, width (cols), height (rows)]
             self.tensor = torch.zeros(
                 self.confidences + self.bounding_boxes * 4 + self.object_categories,
-                self.grids_cols, self.grids_rows, dtype=torch.float32)
+                self.grids_size[0], self.grids_size[1], dtype=torch.float32)
         else:
             # convert the dataset type to float32
             self.tensor = tensor_grids.float()
 
         # reshape the tensor dataset to [confidences x bounding_boxes x objects, width, height]
-        self.tensor = self.tensor.reshape(-1, self.grids_cols, self.grids_rows)
+        self.tensor = self.tensor.reshape(-1, self.grids_size[0], self.grids_size[1])
 
         # set cursor to the grids
         self.cursor = GridDetectionResult(
@@ -52,10 +50,6 @@ class NetworkDetectedResult(object):
         self.check_tensor_size()
 
     def check_tensor_size(self) -> None:
-        # check the dimensions of grids
-        if self.grids_rows <= 0 or self.grids_cols <= 0:
-            raise ValueError("grids_rows or grids_cols must not be zero!")
-
         # check the dimensions of object categories, bounding boxes and confidences
         if self.object_categories <= 0 or self.bounding_boxes <= 0 or self.confidences <= 0:
             raise ValueError("object_categories, bounding_boxes, confidences must not be zero!")
@@ -64,7 +58,7 @@ class NetworkDetectedResult(object):
         flatten_size = self.tensor.reshape(-1).shape[0]
 
         # check the flatten tensor size
-        if flatten_size != self.grids_rows * self.grids_cols * \
+        if flatten_size != self.grids_size[0] * self.grids_size[1] * \
                 (self.confidences + self.bounding_boxes * 4 + self.object_categories):
             # raise value error
             raise ValueError("grid size is not correct!")
@@ -88,8 +82,8 @@ class NetworkDetectedResult(object):
         output_str = ""
 
         # print out the tensor dataset
-        for x in range(self.grids_cols):
-            for y in range(self.grids_rows):
+        for x in range(self.grids_size[0]):
+            for y in range(self.grids_size[1]):
                 # get grid from grids
                 grid = self.focus_cursor(x, y)
 
@@ -103,14 +97,13 @@ class NetworkDetectedResult(object):
 
 def test():
     # Assume we have 8x8 grids, 10 object category, 2 bounding boxes for each grid and 1 confidence
-    grids_cols = 8
-    grids_rows = 8
+    grids_size = (8, 8)
     object_categories = 10
     bounding_boxes = 1
     confidences = 1
 
     # create a grids tensor
-    grids = NetworkDetectedResult(grids_cols=grids_cols, grids_rows=grids_rows,
+    grids = NetworkDetectedResult(grids_size=grids_size,
                                   confidences=confidences, bounding_boxes=bounding_boxes,
                                   object_categories=object_categories)
     # get grid from grids

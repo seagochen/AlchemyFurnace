@@ -5,17 +5,17 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from SimpleMNISTDetection.dataset.ModifiedDataset import MNISTWrapperDataset
+from YoloVer1.model.YoloNetwork import YoloV1Network
+from YoloVer1.dataset.MNISTDataset import MNISTDataset
 
 # global variables
 batch_size = 4
 epochs = 10
-grids_cols = 1
-grids_rows = 1
-confidences = 0
-bounding_boxes = 0
+grids_size = (6, 6)
+confidences = 1
+bounding_boxes = 2
 object_categories = 10
-data_dir = '../data/MNIST'
+data_dir = 'data/MNIST'
 
 # transform sequential
 transform = transforms.Compose([
@@ -25,20 +25,20 @@ transform = transforms.Compose([
 ])
 
 # training dataset
-train_dataset = MNISTWrapperDataset(root=data_dir,
-                               train=True,
-                               download=True,
-                               transform=transform)
+train_dataset = MNISTDataset(root=data_dir,
+                                    train=True,
+                                    download=True,
+                                    transform=transform)
 # training loader
 train_loader = DataLoader(train_dataset,
                           shuffle=True,
                           batch_size=batch_size)
 
 # test dataset
-test_dataset = MNISTWrapperDataset(root=data_dir,
-                              train=False,
-                              download=True,
-                              transform=transform)
+test_dataset = MNISTDataset(root=data_dir,
+                                   train=False,
+                                   download=True,
+                                   transform=transform)
 # test loader
 test_loader = DataLoader(test_dataset,
                          shuffle=False,
@@ -46,8 +46,7 @@ test_loader = DataLoader(test_dataset,
 
 
 # define training function
-def train(model, device, train_loader, optimizer, epoch):
-
+def train(model, device, loader, optimizer, epoch):
     # train parameters
     model.train()  # set model to train mode
 
@@ -56,7 +55,7 @@ def train(model, device, train_loader, optimizer, epoch):
     model = model.to(device)
 
     # train the model
-    for batch_idx, (data, target) in enumerate(train_loader):
+    for batch_idx, (data, target) in enumerate(loader):
         data, target = data.to(device), target.to(device)
 
         # clear the gradients
@@ -70,13 +69,12 @@ def train(model, device, train_loader, optimizer, epoch):
 
         if batch_idx % 10 == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(train_loader.dataset),
-                       100. * batch_idx / len(train_loader), loss.item()))
-        
+                epoch, batch_idx * len(data), len(loader.dataset),
+                       100. * batch_idx / len(loader), loss.item()))
+
 
 # define test function
-def test(model, device, test_loader):
-
+def test(model, device, loader):
     # test parameters
     model.eval()  # set model to test mode
     test_loss = 0
@@ -88,7 +86,7 @@ def test(model, device, test_loader):
 
     # test the model
     with torch.no_grad():
-        for data, target in test_loader:
+        for data, target in loader:
             data, target = data.to(device), target.to(device)
 
             output = model(data)
@@ -96,23 +94,19 @@ def test(model, device, test_loader):
             correct += (predicated == target).sum().item()
             test_loss += criterion(output, target).item()
 
-    test_loss /= len(test_loader.dataset)
+    test_loss /= len(loader.dataset)
 
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        test_loss, correct, len(test_loader.dataset),
-        100. * correct / len(test_loader.dataset)))
+        test_loss, correct, len(loader.dataset),
+        100. * correct / len(loader.dataset)))
 
 
 def run_train_and_test_demo():
-    # import model
-    # from SimpleMNISTDetection.model.CNNNetwork import ConvolutionalNeuralNetwork
-    from SimpleMNISTDetection.model.YoloNetwork import SimpleYoloNetwork
-
     # define model
-    model = SimpleYoloNetwork(grids_size=(grids_cols, grids_rows),
-                              confidences=confidences,
-                              boxes=bounding_boxes,
-                              categories=object_categories)
+    model = YoloV1Network(grids_size=grids_size,
+                          confidences=confidences,
+                          bounding_boxes=bounding_boxes,
+                          categories=object_categories)
 
     # define optimizer
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)
