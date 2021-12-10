@@ -3,11 +3,12 @@ import torch
 
 class YoloV1Network(torch.nn.Module):
 
-    def __init__(self, grids_size=(1, 1), confidences=0, bounding_boxes=0, categories=10):
+    def __init__(self, grids_size=(1, 1), confidences=0, bounding_boxes=0, object_categories=10):
         super().__init__()
 
         # compute final output dataset size
-        out_features = (confidences + bounding_boxes * 4 + categories) * grids_size[0] * grids_size[1]
+        self.grids_size = grids_size
+        out_features = (confidences + bounding_boxes * 4 + object_categories) * grids_size[0] * grids_size[1]
 
         # step 1: processing image with convolution layer
         # input dataset size is (B, C: 3, H: 448, W: 448)
@@ -134,15 +135,35 @@ class YoloV1Network(torch.nn.Module):
         data = self.conv_6(data)
         data = self.fc_7(data.reshape(B, -1))
         data = self.fc_8(data)
+
+        # transform the tensor to the shape of [B, C, G]
+        data = data.reshape(B, -1, self.grids_size[0] * self.grids_size[1])
         return data
 
 
-def test():
+def test_without_params():
     data = torch.zeros(64, 3, 448, 448)
     yolo_v1 = YoloV1Network()
     data = yolo_v1(data)
     print(data.size())
 
 
+def test_with_params():
+    batch_size = 4
+    grids_size = (6, 6)
+    confidences = 1
+    bounding_boxes = 2
+    object_categories = 10
+
+    data = torch.zeros(batch_size, 3, 448, 448)
+    yolo_v1 = YoloV1Network(grids_size=grids_size,
+                            confidences=confidences,
+                            bounding_boxes=bounding_boxes,
+                            object_categories=object_categories)
+    data = yolo_v1(data)
+    print(data.size())
+
+
 if __name__ == "__main__":
-    test()
+    test_without_params()
+    test_with_params()

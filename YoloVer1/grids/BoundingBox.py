@@ -22,14 +22,14 @@ def val_clamp(pts: tuple, alpha=0., beta=1.) -> tuple:
     )
 
 
-def grids_coord(rect_pts: tuple, spatial_size: tuple, grid_size: tuple, alpha=0., beta=1., gamma=1.) -> Dict[
+def grids_coord(rect_pts: tuple, spatial_size: tuple, grids_size: tuple, alpha=0., beta=1., gamma=1.) -> Dict[
     str, Union[int, Any]]:
     """
     将 bounding box 转化为网格坐标。
 
     :param rect_pts: 使用bounding box的左上角和右下角坐标，类型为tuple(ltx, lty, rbx, rby)
     :param spatial_size: 图像的空间尺寸，类型为tuple(width, height)
-    :param grid_size: 网格尺寸，类型为tuple(x grids, y grids)
+    :param grids_size: 网格尺寸，类型为tuple(x grids, y grids)
     :param alpha: 映射的起始值
     :param beta: 映射的终止值
     :param gamma: 映射的缩放系数
@@ -40,7 +40,7 @@ def grids_coord(rect_pts: tuple, spatial_size: tuple, grid_size: tuple, alpha=0.
     center_x, center_y = (rect_pts[0] + rect_pts[2]) / 2, (rect_pts[1] + rect_pts[3]) / 2
 
     # 再确定grids的大小
-    grid_width, grid_height = spatial_size[0] / grid_size[0], spatial_size[1] / grid_size[1]
+    grid_width, grid_height = spatial_size[0] / grids_size[0], spatial_size[1] / grids_size[1]
 
     # 确定中心点的坐标
     grid_x, grid_y = math.ceil(center_x / grid_width), math.ceil(center_y / grid_height)

@@ -16,20 +16,20 @@ class YoloGrids(NetworkDetectedResult):
 
         # keep the parameters
         self.spatial_size = spatial_size
-        self.grid_size = grids_size
+        self.grids_size = grids_size
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
 
     def __call__(self, target, left_x, top_y, right_x, bottom_y) -> torch.Tensor:
         t = self.set_yolo_target(target, left_x, top_y, right_x, bottom_y)
-        return t.reshape(-1)
+        return t.reshape(-1, self.grids_size[0] * self.grids_size[1])
 
     def set_yolo_target(self, target, left_x, top_y, right_x, bottom_y) -> torch.Tensor:
         # calculate the bounding box relative coordination
         general_coord = bbox.grids_coord((left_x, top_y, right_x, bottom_y),
                                          spatial_size=self.spatial_size,
-                                         grid_size=self.grid_size,
+                                         grids_size=self.grids_size,
                                          alpha=self.alpha, beta=self.beta, gamma=self.gamma)
 
         cent_x, cent_y = general_coord["cent_x_rel"], general_coord["cent_y_rel"]
@@ -82,7 +82,7 @@ class YoloGrids(NetworkDetectedResult):
 
         # convert the yolo coordinate to left-top-right-bottom coordinate
         ltrb_coord = bbox.yolo_coord((cent_x, cent_y, bbox_w, bbox_h, grid_i, grid_j),
-                                     grid_size=self.grid_size, gamma=gamma)
+                                     grid_size=self.grids_size, gamma=gamma)
 
         return ltrb_coord
 

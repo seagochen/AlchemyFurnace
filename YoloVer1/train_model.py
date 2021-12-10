@@ -26,9 +26,9 @@ transform = transforms.Compose([
 
 # training dataset
 train_dataset = MNISTDataset(root=data_dir,
-                                    train=True,
-                                    download=True,
-                                    transform=transform)
+                             train=True,
+                             download=True,
+                             transform=transform)
 # training loader
 train_loader = DataLoader(train_dataset,
                           shuffle=True,
@@ -36,9 +36,9 @@ train_loader = DataLoader(train_dataset,
 
 # test dataset
 test_dataset = MNISTDataset(root=data_dir,
-                                   train=False,
-                                   download=True,
-                                   transform=transform)
+                            train=False,
+                            download=True,
+                            transform=transform)
 # test loader
 test_loader = DataLoader(test_dataset,
                          shuffle=False,
@@ -69,8 +69,7 @@ def train(model, device, loader, optimizer, epoch):
 
         if batch_idx % 10 == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(loader.dataset),
-                       100. * batch_idx / len(loader), loss.item()))
+                epoch, batch_idx * len(data), len(loader.dataset), 100. * batch_idx / len(loader), loss.item()))
 
 
 # define test function
@@ -106,7 +105,7 @@ def run_train_and_test_demo():
     model = YoloV1Network(grids_size=grids_size,
                           confidences=confidences,
                           bounding_boxes=bounding_boxes,
-                          categories=object_categories)
+                          object_categories=object_categories)
 
     # define optimizer
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)

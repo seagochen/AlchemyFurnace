@@ -35,7 +35,7 @@ def mark_detected_obj(image: np.ndarray,
 
 
 def test():
-    image = cv2.imread("../dataset/images/test.jpg")
+    image = cv2.imread("../data/images/test.jpg")
 
     if image is None:
         print("Image not found")
