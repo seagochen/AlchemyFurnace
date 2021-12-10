@@ -6,7 +6,7 @@ from CvTools import BoundingBox as bbox
 class YoloGrids(NetworkDetectedResult):
 
     def __init__(self, grids_cols, grids_rows, confidences, bounding_boxes, object_categories,
-                 spatial_size: tuple = (224, 224), alpha: float = 0., beta: float = 224., gamma: float = 1.):
+                 spatial_size: tuple = (448, 448), alpha: float = 0., beta: float = 224., gamma: float = 1.):
 
         # super constructor
         super().__init__(grids_cols=grids_cols,
@@ -21,6 +21,10 @@ class YoloGrids(NetworkDetectedResult):
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
+
+    def __call__(self, target, left_x, top_y, right_x, bottom_y) -> torch.Tensor:
+        t = self.set_yolo_target(target, left_x, top_y, right_x, bottom_y)
+        return t
 
     def set_yolo_target(self, target, left_x, top_y, right_x, bottom_y) -> torch.Tensor:
         # calculate the bounding box relative coordination
@@ -104,8 +108,8 @@ def test():
                           bounding_boxes=bounding_boxes)
 
     # set the target and pred
-    target_grids.set_yolo_target(target=8, left_x=33, top_y=40, right_x=89, bottom_y=96)
-    pre_grids.set_yolo_pre(confidence=0.9,
+    t_true = target_grids.set_yolo_target(target=8, left_x=33, top_y=40, right_x=89, bottom_y=96)
+    t_pred = pre_grids.set_yolo_pre(confidence=0.9,
                            obj_ind=5, obj_confidence=0.3,
                            bbox_ind=0, cent_x=0.3, cent_y=0.3, bbox_w=0.5, bbox_h=0.5,
                            grid_i=2, grid_j=2)

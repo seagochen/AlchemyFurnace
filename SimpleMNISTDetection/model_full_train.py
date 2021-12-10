@@ -109,8 +109,10 @@ def run_train_and_test_demo():
     from SimpleMNISTDetection.model.YoloNetwork import SimpleYoloNetwork
 
     # define model
-    # model = SimpleYoloNetwork(grids_cols, grids_rows, confidences, bounding_boxes, object_categories)
-    model = SimpleYoloNetwork()
+    model = SimpleYoloNetwork(grids_size=(grids_cols, grids_rows),
+                              confidences=confidences,
+                              boxes=bounding_boxes,
+                              categories=object_categories)
 
     # define optimizer
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.5)

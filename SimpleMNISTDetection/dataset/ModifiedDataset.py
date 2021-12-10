@@ -4,8 +4,7 @@ import cv2
 import numpy as np
 from torchvision import datasets
 
-from CvTools import ImageConverter as converter
-from GridSystem.YoloGrids import YoloGrids
+from CvTools import ImageConvertor as converter
 
 
 class MNISTWrapperDataset(datasets.MNIST):
@@ -16,7 +15,7 @@ class MNISTWrapperDataset(datasets.MNIST):
                  transform: Optional[Callable] = None,
                  target_transform: Optional[Callable] = None,
                  download: bool = False,
-                 yolo_grids: Optional[YoloGrids] = None,
+                 yolo_grids: Optional[Callable] = None,
                  img_size: tuple = (448, 448, 3),
                  obj_size: tuple = (64, 64)):
 
@@ -49,10 +48,10 @@ class MNISTWrapperDataset(datasets.MNIST):
             target = self.target_transform(target)
 
         elif self.grids is not None:
-            target = self.grids.set_yolo_target(target,
-                                                shift_x, shift_y,
-                                                self.obj_size[0] + shift_x,
-                                                self.obj_size[1] + shift_y)
+            target = self.grids(target,
+                                shift_x, shift_y,
+                                self.obj_size[0] + shift_x,
+                                self.obj_size[1] + shift_y)
 
         return img, target
 
