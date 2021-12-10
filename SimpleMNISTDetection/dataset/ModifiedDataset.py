@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 from torchvision import datasets
 
-from CvTools import ImageConvertor as converter
+from SimpleMNISTDetection.CvTools import ImageConvertor as converter
 
 
 class MNISTWrapperDataset(datasets.MNIST):

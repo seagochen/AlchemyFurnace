@@ -1,6 +1,6 @@
 import torch
-from CvTools.NetworkDetectedResult import NetworkDetectedResult
-from CvTools import BoundingBox as bbox
+from SimpleMNISTDetection.CvTools.NetworkDetectedResult import NetworkDetectedResult
+from SimpleMNISTDetection.CvTools import BoundingBox as bbox
 
 
 class YoloGrids(NetworkDetectedResult):
@@ -24,7 +24,7 @@ class YoloGrids(NetworkDetectedResult):
 
     def __call__(self, target, left_x, top_y, right_x, bottom_y) -> torch.Tensor:
         t = self.set_yolo_target(target, left_x, top_y, right_x, bottom_y)
-        return t
+        return t.reshape(-1)
 
     def set_yolo_target(self, target, left_x, top_y, right_x, bottom_y) -> torch.Tensor:
         # calculate the bounding box relative coordination

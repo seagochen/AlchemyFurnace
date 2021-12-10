@@ -1,5 +1,5 @@
 import torch
-from CvTools.GridDetectionResult import GridDetectionResult
+from SimpleMNISTDetection.CvTools.GridDetectionResult import GridDetectionResult
 
 
 class NetworkDetectedResult(object):
