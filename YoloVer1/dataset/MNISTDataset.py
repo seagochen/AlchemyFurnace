@@ -6,37 +6,44 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 
 from YoloVer1.dataset.PlotMNISTImage import plot_mnist_image
+from YoloVer1.grids.YoloGrids import YoloGrids
 
 
 class GenRandMNISTImage(object):
 
-    def __init__(self, img_size: tuple = (448, 448, 3), obj_size: tuple = (64, 64)):
+    def __init__(self, img_size: tuple = (448, 448, 3), rand_range: tuple = (1.5, 5.), obj_size: tuple = (32, 32)):
         self.new_img_size = img_size
-        self.new_obj_size = obj_size
+        self.rand_range = rand_range
+        self.obj_size = obj_size
 
     def __call__(self, img: np.ndarray):
-        # 随机MNIST坐标
-        shift_x = np.random.randint(0, self.new_img_size[0] - self.new_obj_size[0])
-        shift_y = np.random.randint(0, self.new_img_size[1] - self.new_obj_size[1])
+        # randomly scale the imageq
+        rand_scale = np.random.uniform(self.rand_range[0], self.rand_range[1])
+        rand_w = int(self.obj_size[0] * rand_scale)
+        rand_h = int(self.obj_size[1] * rand_scale)
+
+        # randomly object coordinates
+        shift_x = np.random.randint(0, self.new_img_size[0] - rand_w)
+        shift_y = np.random.randint(0, self.new_img_size[1] - rand_h)
 
         # convert gray image to color image
         img = np.expand_dims(img, axis=2)
         img = np.concatenate([img, img, img], axis=2)
 
         # resize the image
-        img = cv2.resize(img, self.new_obj_size, interpolation=cv2.INTER_CUBIC)
+        img = cv2.resize(img, (rand_w, rand_h), interpolation=cv2.INTER_CUBIC)
 
         # create a new image with the given size
         blank_image = np.zeros(self.new_img_size, np.uint8)
 
         # we now need to put the picture in a random position of the new image
-        blank_image[shift_y: shift_y + self.new_obj_size[0], shift_x: shift_x + self.new_obj_size[1]] = img
+        blank_image[shift_y: shift_y + rand_h, shift_x: shift_x + rand_w] = img
 
         # swap the dimensions of the image
         blank_image = np.transpose(blank_image, (2, 0, 1))
 
         # 返回新的图片以及 bounding box 坐标信息
-        return blank_image, (shift_x, shift_y, shift_x + self.new_obj_size[1], shift_y + self.new_obj_size[0])
+        return blank_image, (shift_x, shift_y, shift_x + rand_w, shift_y + rand_h)
 
 
 class MNISTDataset(datasets.MNIST):
@@ -70,7 +77,6 @@ class MNISTDataset(datasets.MNIST):
         # 是否需要生成新的MNIST图像
         if self.rand_mnist is not None:
             img, bbox = self.rand_mnist(img)
-            print("original data is", target, "at", bbox)
 
         # 图片数据是否需要转化
         if self.transform is not None:
@@ -91,22 +97,20 @@ class MNISTDataset(datasets.MNIST):
 
 def test():
     # create yolo grids
-    # yolo_grids = YoloGrids(grids_size=(8, 8), confidences=1, bounding_boxes=1, object_categories=10)
+    yolo_grids = YoloGrids()
 
     # resize the output MNIST image
     rand_mnist = GenRandMNISTImage()
 
     # create the MNIST dataset
-    dataset = MNISTDataset(root='../data/MNIST', train=True, download=False, rand_mnist=rand_mnist)
+    dataset = MNISTDataset(root='../data/MNIST', train=True, download=False,
+                           rand_mnist=rand_mnist, grids_system=yolo_grids)
 
     # create data loader
     data_loader = DataLoader(dataset=dataset, batch_size=4, shuffle=True)
 
     # iterate over the data
     for i, (img, target) in enumerate(data_loader):
-        # print out shape of tensors
-        print(img.shape, target.shape)
-
         # show images
         plot_mnist_image(images=img, marks=target)
 

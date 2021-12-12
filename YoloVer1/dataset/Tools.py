@@ -16,7 +16,7 @@ def derive_bounding_box(yolo_grids: torch.Tensor,
                         threshold: float = 0.5,
                         grids_size: tuple = (8, 8),
                         confidences: int = 1,
-                        bounding_boxes: int = 1, 
+                        bounding_boxes: int = 1,
                         gamma: int = 448):
     """
     According to the yolo_grids' confidence, derive the bounding box.
@@ -36,16 +36,15 @@ def derive_bounding_box(yolo_grids: torch.Tensor,
     # 遍历每个网格
     for i in range(grids_size[0]):
         for j in range(grids_size[1]):
-            
+
             # 计算网格位移量
-            ind = i + j * grids_size[0]
+            ind = i * grids_size[1] + j
 
             # 获取当前网格的置信度
             conf = yolo_grids[:confidences, ind].item()
 
             # 如果当前网格的置信度大于阈值，则计算当前网格的坐标
             if conf > threshold and conf > last_conf:
-
                 # 更新置信度
                 last_conf = conf
 
@@ -65,11 +64,9 @@ def derive_object_name(yolo_grids: torch.Tensor, labels: list,
                        threshold: float = 0.5,
                        grids_size: tuple = (8, 8),
                        confidences: int = 1,
-                       bounding_boxes: int = 1,
-                       object_categories: int = 10):
+                       bounding_boxes: int = 1):
     """
     According to the object confidence of yolo grids, derive the object name.
-    :param object_categories:
     :param bounding_boxes:
     :param confidences:
     :param grids_size:
@@ -84,7 +81,7 @@ def derive_object_name(yolo_grids: torch.Tensor, labels: list,
     # 遍历每个网格
     for i in range(grids_size[0]):
         for j in range(grids_size[1]):
-            
+
             # 计算网格位移量
             ind = i * grids_size[1] + j
 
@@ -104,10 +101,9 @@ def derive_object_name(yolo_grids: torch.Tensor, labels: list,
                 max_conf, max_ind = torch.max(objects, 0)
 
                 # 获取类别名称
-                last_text = labels[max_ind.item()]
-
-                # 确定置信度
-                if max_conf.item() < threshold:
+                if max_conf < threshold:
                     last_text = "Unknown"
+                else:
+                    last_text = labels[max_ind.item()]
 
     return last_text

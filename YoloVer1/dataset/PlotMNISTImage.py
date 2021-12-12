@@ -55,12 +55,11 @@ def plot_mnist_image(images: torch.Tensor, marks: torch.Tensor,
 
         # then, derive the label text from the mark
         label = tools.derive_object_name(marks[i, :, :], labels=['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
-        print("transform data is", label, "at", bbox)
 
         # draw the final image
         if bbox is not None and label is not None:
             marked_img = mark_detected_obj(image=img,
-                                           text=label, text_pt=(bbox[0], bbox[3]), font_size=2,
+                                           text=label, text_pt=(bbox[0], bbox[3]), font_size=1,
                                            font_color=(0, 255, 255),
                                            bbox=bbox, box_color=(255, 0, 0))
         else:
