@@ -1,8 +1,8 @@
 import torch
-from YoloVer1.grids.GridDetectionResult import GridDetectionResult
+from YoloVer1.grids.Cell import Cell
 
 
-class NetworkDetectedResult(object):
+class GeneralGrids(object):
     """
     物体识别结果
     用统一的格式保存物体识别结果，避免由于算法不同或者处理疏忽导致的意外情况
@@ -41,7 +41,7 @@ class NetworkDetectedResult(object):
         self.tensor = self.tensor.reshape(-1, self.grids_size[0], self.grids_size[1])
 
         # set cursor to the grids
-        self.cursor = GridDetectionResult(
+        self.cursor = Cell(
             confidences=confidences,
             bounding_boxes=bounding_boxes,
             object_categories=object_categories)
@@ -63,7 +63,7 @@ class NetworkDetectedResult(object):
             # raise value error
             raise ValueError("grid size is not correct!")
 
-    def focus_cursor(self, grid_x: int = 0, grid_y: int = 0) -> GridDetectionResult:
+    def focus_cursor(self, grid_x: int = 0, grid_y: int = 0) -> Cell:
         # get the grid from the tensor dataset
         self.cursor.focus_on(self.tensor[:, grid_x, grid_y])
         return self.cursor
@@ -103,9 +103,9 @@ def test():
     confidences = 1
 
     # create a grids tensor
-    grids = NetworkDetectedResult(grids_size=grids_size,
-                                  confidences=confidences, bounding_boxes=bounding_boxes,
-                                  object_categories=object_categories)
+    grids = GeneralGrids(grids_size=grids_size,
+                         confidences=confidences, bounding_boxes=bounding_boxes,
+                         object_categories=object_categories)
     # get grid from grids
     grid = grids.focus_cursor(2, 2)
 

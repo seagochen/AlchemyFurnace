@@ -3,18 +3,18 @@ import numpy as np
 
 
 def mark_detected_obj(image: np.ndarray,
-    text: str, text_pt: tuple, font_size: int, font_color: tuple,
-    bbox: tuple, box_color: tuple):
+                      text: str, text_pt: tuple, font_size: int, font_color: tuple,
+                      bbox: tuple, box_color: tuple):
     """
-    Mark detected object on image
-    :param color: (B, G, R)
-    :param image: cv image with shape (H, W, C) and dtype=np.uint8
-    :param text: text to display
-    :param text_pt: font orientation (x, y) to display
-    :param font_size: font size
-    :param font_color: font color with (B, G, R) format
-    :param bbox: bounding box with (left_x, left_y, right_x, right_y)
-    :param box_color: bounding box color with color channel in (B, G, R) format
+    绘制带 bounding box 的图片
+    :param image: BGR 彩色图片
+    :param text: 绘制的文字
+    :param text_pt: 文字的左上角坐标
+    :param font_size: 字体大小
+    :param font_color: 字体颜色
+    :param bbox: bounding box 坐标（左上角坐标，右下角坐标）
+    :param box_color: bounding box 颜色
+    :return:
     """
 
     # copy image to avoid modify original image

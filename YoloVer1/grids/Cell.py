@@ -2,7 +2,7 @@ import torch
 from siki.numeric.Basics import *
 
 
-class GridDetectionResult(object):
+class Cell(object):
     """
     This class is used to store the detected result of each grid.
     """
