@@ -5,7 +5,6 @@ import numpy as np
 from torch.utils.data import DataLoader
 from torchvision import datasets
 
-from YoloVer1.grids.YoloGrids import YoloGrids
 from YoloVer1.dataset.PlotMNISTImage import plot_mnist_image
 
 
@@ -71,6 +70,7 @@ class MNISTDataset(datasets.MNIST):
         # 是否需要生成新的MNIST图像
         if self.rand_mnist is not None:
             img, bbox = self.rand_mnist(img)
+            print("original data is", target, "at", bbox)
 
         # 图片数据是否需要转化
         if self.transform is not None:
@@ -91,26 +91,25 @@ class MNISTDataset(datasets.MNIST):
 
 def test():
     # create yolo grids
-    yolo_grids = YoloGrids(grids_size=(8, 8), confidences=1, bounding_boxes=1, object_categories=10)
+    # yolo_grids = YoloGrids(grids_size=(8, 8), confidences=1, bounding_boxes=1, object_categories=10)
 
     # resize the output MNIST image
     rand_mnist = GenRandMNISTImage()
 
     # create the MNIST dataset
-    dataset = MNISTDataset(root='../data/MNIST', train=True, download=False, grids_system=yolo_grids,
-                           rand_mnist=rand_mnist)
+    dataset = MNISTDataset(root='../data/MNIST', train=True, download=False, rand_mnist=rand_mnist)
 
     # create data loader
     data_loader = DataLoader(dataset=dataset, batch_size=4, shuffle=True)
 
     # iterate over the data
     for i, (img, target) in enumerate(data_loader):
+        # print out shape of tensors
         print(img.shape, target.shape)
 
         # show images
         plot_mnist_image(images=img, marks=target)
 
-        # break
         if i == 10:
             break
         
