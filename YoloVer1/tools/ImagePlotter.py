@@ -3,8 +3,8 @@ import numpy as np
 
 
 def mark_detected_obj(image: np.ndarray,
-                      text: str, text_pt: tuple, font_size: int, font_color: tuple,
-                      bbox: tuple, box_color: tuple):
+                      text: str, text_pt: [tuple, list], font_size: int, font_color: [tuple, list],
+                      bbox: [tuple, list], box_color: [tuple, list]):
     """
     绘制带 bounding box 的图片
     :param image: BGR 彩色图片

@@ -7,9 +7,10 @@ from torchvision import datasets
 
 from YoloVer1.dataset.PlotMNISTImage import plot_mnist_image
 from YoloVer1.grids.YoloGrids import YoloGrids
+from YoloVer1.tools.Normalizer import *
 
 
-class GenRandMNISTImage(object):
+class GenerateRandMNIST(object):
 
     def __init__(self, img_size: tuple = (448, 448, 3), rand_range: tuple = (1.5, 5.), obj_size: tuple = (32, 32)):
         self.new_img_size = img_size
@@ -51,21 +52,22 @@ class MNISTDataset(datasets.MNIST):
     def __init__(self,
                  root: str,
                  train: bool = True,
-                 transform: Optional[Callable] = None,
-                 target_transform: Optional[Callable] = None,
                  download: bool = False,
+                 norm_data: Optional[Callable] = None,
                  grids_system: Optional[Callable] = None,
                  rand_mnist: Optional[Callable] = None):
 
         # call super constructor
-        super().__init__(root=root, train=train, download=download,
-                         transform=transform, target_transform=target_transform)
+        super().__init__(root=root, train=train, download=download)
 
-        # 生成随机MNIST图像
+        # generate rand position and scaled MNIST image
         self.rand_mnist = rand_mnist
 
-        # create the net grids
+        # use yolo grid system
         self.grids_system = grids_system
+
+        # use normalize function
+        self.norm_data = norm_data
 
     def __getitem__(self, index):
         # get the image and the label
@@ -74,19 +76,16 @@ class MNISTDataset(datasets.MNIST):
         # bounding box
         bbox = None
 
-        # 是否需要生成新的MNIST图像
+        # generate new image with randomly position and size
         if self.rand_mnist is not None:
             img, bbox = self.rand_mnist(img)
 
-        # 图片数据是否需要转化
-        if self.transform is not None:
-            img = self.transform(img)
+        # normalize the data to [0, 1]
+        if self.norm_data is not None:
+            img = self.norm_data(img, 0, 255, 1)
 
-        # 标签信息是否需要转化
-        if self.target_transform is not None:
-            target = self.target_transform(target)
-
-        elif self.grids_system is not None and bbox is not None:
+        # use YOLO grid system
+        if self.grids_system is not None and bbox is not None:
             target = self.grids_system(target, bbox)
 
         return img, target
@@ -96,27 +95,29 @@ class MNISTDataset(datasets.MNIST):
 
 
 def test():
-    # create yolo grids
-    yolo_grids = YoloGrids()
-
-    # resize the output MNIST image
-    rand_mnist = GenRandMNISTImage()
-
     # create the MNIST dataset
     dataset = MNISTDataset(root='../data/MNIST', train=True, download=False,
-                           rand_mnist=rand_mnist, grids_system=yolo_grids)
+                           rand_mnist=GenerateRandMNIST(), grids_system=YoloGrids(), norm_data=generic_normalize)
 
     # create data loader
     data_loader = DataLoader(dataset=dataset, batch_size=4, shuffle=True)
 
     # iterate over the data
     for i, (img, target) in enumerate(data_loader):
-        # show images
+        # print out the data dimensions
+        print(img.shape, target.shape)
+
+        # plot image
         plot_mnist_image(images=img, marks=target)
 
+        # sum the batch
+        total = img.sum()
+        print(total)
+
+        # break the loop
         if i == 10:
             break
-        
+
 
 if __name__ == '__main__':
     test()

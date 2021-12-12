@@ -150,9 +150,9 @@ def test_without_params():
 
 def test_with_params():
     batch_size = 4
-    grids_size = (6, 6)
+    grids_size = (8, 8)
     confidences = 1
-    bounding_boxes = 2
+    bounding_boxes = 1
     object_categories = 10
 
     data = torch.zeros(batch_size, 3, 448, 448)
