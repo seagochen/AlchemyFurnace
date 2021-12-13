@@ -1,44 +1,40 @@
-import torch
-import torch.optim as optim
 import torch.nn as nn
-
+import torch.optim as optim
 from torch.utils.data import DataLoader
-from torchvision import transforms
 
+from YoloVer1.dataset.MNISTDataset import MNISTDataset, GenerateRandMNIST
+from YoloVer1.grids.YoloGrids import YoloGrids
+from YoloVer1.loss.YoloLoss import YoloLoss
 from YoloVer1.model.YoloNetwork import YoloV1Network
-from YoloVer1.dataset.MNISTDataset import MNISTDataset
+from YoloVer1.tools.Normalizer import *
 
 # global variables
-batch_size = 4
 epochs = 10
-grids_size = (6, 6)
+batch_size = 4
+grids_size = (8, 8)
 confidences = 1
-bounding_boxes = 2
+bounding_boxes = 1
 object_categories = 10
-data_dir = 'data/MNIST'
 
-# transform sequential
-transform = transforms.Compose([
-    transforms.ToTensor(),
-    #                     mean       std
-    transforms.Normalize((0.1307,), (0.3081,))
-])
+data_dir = 'YoloVer1/data/MNIST'
 
 # training dataset
-train_dataset = MNISTDataset(root=data_dir,
-                             train=True,
-                             download=True,
-                             transform=transform)
+train_dataset = MNISTDataset(root='../data/MNIST', train=True, download=True,
+                             rand_mnist=GenerateRandMNIST(),
+                             grids_system=YoloGrids(),
+                             norm_data=generic_normalize)
+
 # training loader
 train_loader = DataLoader(train_dataset,
                           shuffle=True,
                           batch_size=batch_size)
 
 # test dataset
-test_dataset = MNISTDataset(root=data_dir,
-                            train=False,
-                            download=True,
-                            transform=transform)
+test_dataset = MNISTDataset(root='../data/MNIST', train=False, download=True,
+                            rand_mnist=GenerateRandMNIST(),
+                            grids_system=YoloGrids(),
+                            norm_data=generic_normalize)
+
 # test loader
 test_loader = DataLoader(test_dataset,
                          shuffle=False,
@@ -51,8 +47,8 @@ def train(model, device, loader, optimizer, epoch):
     model.train()  # set model to train mode
 
     # criterion and device auto-chosen
-    criterion = nn.CrossEntropyLoss().to(device)
     model = model.to(device)
+    criterion = YoloLoss()
 
     # train the model
     for batch_idx, (data, target) in enumerate(loader):
