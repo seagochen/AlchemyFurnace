@@ -16,7 +16,7 @@ class YoloLoss(torch.nn.Module):
         self.lambda_noobj = lambda_noobj
 
         # define loss function
-        self.loss_function = torch.nn.MSELoss(reduction="sum")
+        self.loss_function = torch.nn.MSELoss(reduction="mean")
 
     def forward(self, y_pred, y_true):
         """
@@ -25,42 +25,37 @@ class YoloLoss(torch.nn.Module):
         :return:
         """
 
-        # define loss
-        loss = 0
-
         # get the shape of dimensions
-        _, _, N = y_pred.shape
+        B, _, N = y_pred.shape
 
-        # iterate over grids
-        for i in range(N):
-            # get the confidence and bounding box prediction
-            confidence = y_pred[:, :self.confidences, i]
-            bounding_box = y_pred[:, self.confidences: self.confidences + self.bounding_boxes * 4, i]
-            object_classes = y_pred[:, self.confidences + self.bounding_boxes * 4:, i]
+        # get the confidence and bounding box prediction
+        confidence = y_pred[:, :self.confidences, :]
+        bounding_box = y_pred[:, self.confidences: self.confidences + self.bounding_boxes * 4, :]
+        object_classes = y_pred[:, self.confidences + self.bounding_boxes * 4:, :]
 
-            # get the ground truth
-            ground_truth = y_true[:, :self.confidences, i]
-            ground_truth_bounding_box = y_true[:, self.confidences: self.confidences + self.bounding_boxes * 4, i]
-            ground_truth_object_classes = y_true[:, self.confidences + self.bounding_boxes * 4:, i]
+        # get the ground truth
+        ground_truth = y_true[:, :self.confidences, :]
+        ground_truth_bounding_box = y_true[:, self.confidences: self.confidences + self.bounding_boxes * 4, :]
+        ground_truth_object_classes = y_true[:, self.confidences + self.bounding_boxes * 4:, :]
 
-            # lambda
-            lambda_coord = torch.where(ground_truth == 1., self.lambda_coord, 1.)
-            lambda_noobj = torch.where(ground_truth == 0., self.lambda_noobj, 1.)
+        # lambda
+        lambda_coord = torch.where(ground_truth == 1., self.lambda_coord, 1.)
+        lambda_noobj = torch.where(ground_truth == 0., self.lambda_noobj, 1.)
 
-            # compute the bounding box loss
-            box_loss = self.loss_function(bounding_box, ground_truth_bounding_box) * lambda_coord
+        # compute the bounding box loss
+        box_loss = self.loss_function(bounding_box, ground_truth_bounding_box) * lambda_coord
 
-            # compute the confidence loss
-            conf_loss = self.loss_function(confidence, ground_truth) * lambda_noobj
+        # compute the confidence loss
+        conf_loss = self.loss_function(confidence, ground_truth) * lambda_noobj
 
-            # compute the object loss
-            object_loss = self.loss_function(object_classes, ground_truth_object_classes)
+        # compute the object loss
+        object_loss = self.loss_function(object_classes, ground_truth_object_classes) * lambda_noobj
 
-            # compute the total loss
-            loss += box_loss + conf_loss + object_loss
+        # compute the total loss
+        loss = box_loss + conf_loss + object_loss
 
         # return the loss
-        return loss
+        return torch.sum(loss) / B
 
 
 def grid_sample(conf, bbox, obj=-1):
@@ -97,3 +92,8 @@ def test():
 
 if __name__ == '__main__':
     test()
+
+
+"""
+论文的方法会导致梯度爆炸，所以在训练过程中，我们直接使用MSE损失函数，更为稳妥一些
+"""
