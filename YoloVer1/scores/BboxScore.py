@@ -23,7 +23,7 @@ def bbox_score(output: torch.Tensor, target: torch.Tensor, threshold: float = 0.
     hits_iou = torch.where(hits_mask, all_iou, torch.zeros_like(all_iou))
 
     # 计算ious的均值
-    average_of_iou = torch.mean(hits_iou[hits_mask])
+    average_of_iou = torch.mean(hits_iou)
 
     # 计算hits数
     hits_num = torch.where(hits_mask, torch.ones_like(hits_mask), torch.zeros_like(hits_mask)).sum()

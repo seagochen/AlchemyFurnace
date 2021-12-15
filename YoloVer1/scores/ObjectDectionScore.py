@@ -16,8 +16,8 @@ def object_score(output, target, failure_table):
     true_categories = bool_mask_select(true_categories, failure_table == 0, torch.zeros_like(true_categories))
 
     # 保留每项中最大值
-    _, pred_indices = torch.max(pred_categories, dim=2)
-    _, true_indices = torch.max(true_categories, dim=2)
+    _, pred_indices = torch.max(pred_categories, dim=1)
+    _, true_indices = torch.max(true_categories, dim=1)
 
     fin = bool_intersection_op(bool_eq_op(pred_indices, true_indices), failure_table == 0)
 
