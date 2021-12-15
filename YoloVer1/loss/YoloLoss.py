@@ -58,42 +58,6 @@ class YoloLoss(torch.nn.Module):
         return torch.sum(loss) / B
 
 
-def grid_sample(conf, bbox, obj=-1):
-    t = torch.zeros(1 + 4 + 10)
-
-    # set the confidence
-    t[0] = conf
-
-    # set the bounding box
-    t[1] = bbox[0]
-    t[2] = bbox[1]
-    t[3] = bbox[2]
-    t[4] = bbox[3]
-
-    # set the object classes
-    if obj >= 0:
-        t[5 + obj] = 1
-
-    return t
-
-
-def test():
-    zero = grid_sample(0, (0, 0, 0, 0)).float()
-    value = grid_sample(1, (0.5, 0.5, 0.3, 0.3), 5).float()
-
-    true_grids = torch.stack((zero, value, zero), dim=1).reshape(1, 15, 3)
-    pred_grids = torch.rand(1, 15, 3)
-
-    yolo_loss = YoloLoss()
-    loss = yolo_loss(pred_grids, true_grids)
-
-    print(loss)
-
-
-if __name__ == '__main__':
-    test()
-
-
 """
 论文的方法会导致梯度爆炸，所以在训练过程中，我们直接使用MSE损失函数，更为稳妥一些
 """

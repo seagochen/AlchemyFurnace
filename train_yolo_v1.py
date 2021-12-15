@@ -6,6 +6,8 @@ from YoloVer1.dataset.MNISTDataset import MNISTDataset, GenerateRandMNIST
 from YoloVer1.grids.YoloGrids import YoloGrids
 from YoloVer1.model.YoloNetwork import YoloV1Network
 from YoloVer1.tools.Normalizer import *
+from YoloVer1.scores.BboxScore import bbox_score
+from YoloVer1.scores.ObjectDectionScore import object_score
 
 
 # global variables
@@ -16,6 +18,7 @@ confidences = 1
 bounding_boxes = 1
 object_categories = 10
 
+# data folder
 data_dir = 'YoloVer1/data/MNIST'
 
 # training dataset
@@ -58,8 +61,8 @@ def train(model, device, loader, optimizer, epoch):
         optimizer.zero_grad()
 
         # forward, backward, update
-        outputs = model(data)
-        loss = criterion(outputs, target)
+        output = model(data)
+        loss = criterion(output, target)
         loss.backward()
         optimizer.step()
 
@@ -70,49 +73,48 @@ def train(model, device, loader, optimizer, epoch):
 
 # define test function
 def test(model, device, loader):
-    # test parameters
-    model.eval()  # set model to test mode
-    test_loss = 0
-    correct = 0
 
-    # criterion and device auto-chosen
+    # set model to test mode
+    model.eval()
+
+    # define some parameters
+    correct_of_bbox = 0
+    missing_of_bbox = 0
+    failed_of_bbox = 0
+    correct_of_class = 0
+    average_of_iou = 0.
+
+    # device auto-chosen
     model = model.to(device)
 
     # test the model
     with torch.no_grad():
+
         for data, target in loader:
             data, target = data.to(device), target.to(device)
 
             # forward only
             output = model(data)
 
-            # derive the confidences and ground truth
-            pred_conf = output[:, confidences, :]
-            true_conf = target[:, confidences, :]
+            # test the model
+            hits_num, misses_num, fails_num, iou_average, failure_table = bbox_score(output, target)
+            object_num = object_score(output, target, failure_table)
 
-            # derive bounding boxes from output and target
-            pred_bboxes = output[:, confidences:, confidences + bounding_boxes * 4 :]
-            true_bboxes = target[:, confidences:, confidences + bounding_boxes * 4 :]
+            # 统计计算结果
+            correct_of_bbox += hits_num
+            missing_of_bbox += misses_num
+            failed_of_bbox += fails_num
+            correct_of_class += object_num
+            average_of_iou += iou_average
 
-            # derive the object categories from output and target
-            pred_categories = output[:, confidences + bounding_boxes * 4:, :]
-            true_categories = target[:, confidences + bounding_boxes * 4:, :]
+        # 打印本论测试结果，一共预测成功多少个bbox，猜错多少个，miss多少个，成功的bbox下，预测object的正确率是多少，以及平均iou情况
+        accuracy_of_bbox = correct_of_bbox / len(loader.dataset)
+        accuracy_of_class = correct_of_class / len(loader.dataset)
 
-            # derive the bounding box loss
-            iou_scroes = compute_iou(pred_bboxes, true_bboxes) * true_conf * pred_conf
-
-            # derive the object category loss
-            category_loss = (true_categories - pred_categories) ** 2
-
-            _, predicated = torch.max(output.data, dim=1)
-            correct += (predicated == target).sum().item()
-            test_loss += criterion(output, target).item()
-
-    test_loss /= len(loader.dataset)
-
-    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        test_loss, correct, len(loader.dataset),
-        100. * correct / len(loader.dataset)))
+        print("\nTest set: Average of bbox accuracy: {:.4f}, average of object accuracy: {:.4f}, average of iou: {:.4f}".format(
+            accuracy_of_bbox, accuracy_of_class, average_of_iou / len(loader.dataset)))
+        print("Bounding boxes status: hit: {}, miss: {}, failed: {}, total: {}".format(
+            correct_of_bbox, missing_of_bbox, failed_of_bbox, len(loader.dataset)))
 
 
 def run_train_and_test_demo():
