@@ -21,6 +21,9 @@ object_categories = 10
 # data folder
 data_dir = 'YoloVer1/data/MNIST'
 
+# model folder
+model_dir = 'YoloVer1/model/'
+
 # training dataset
 train_dataset = MNISTDataset(root=data_dir, train=True, download=True,
                              rand_mnist=GenerateRandMNIST(),
@@ -136,7 +139,7 @@ def run_train_and_test_demo():
         test(model, device, test_loader)
 
     # save model
-    torch.save(model.state_dict(), '{}/saved_model.pt'.format(data_dir))
+    torch.save(model.state_dict(), '{}/saved_model.pt'.format(model_dir))
     print('Model saved!')
     print('Done!')
 
