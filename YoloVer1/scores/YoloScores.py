@@ -31,7 +31,7 @@ def yolo_scores(output: torch.Tensor, target: torch.Tensor, threshold: float = 0
     hit_iou = torch.where(hit_mask, all_iou, torch.zeros_like(all_iou))
 
     # calculate average of iou
-    hit_sum = torch.sum(hit_iou > 0.).item()
+    hit_sum = torch.sum(hit_iou > 0.)
     sum_iou = torch.sum(hit_iou)
 
     # calculate average of object accuracy
