@@ -6,8 +6,7 @@ from YoloVer1.dataset.MNISTDataset import MNISTDataset, GenerateRandMNIST
 from YoloVer1.grids.YoloGrids import YoloGrids
 from YoloVer1.model.YoloNetwork import YoloV1Network
 from YoloVer1.tools.Normalizer import *
-from YoloVer1.scores.BboxScore import bbox_score
-from YoloVer1.scores.ObjectDectionScore import object_score
+from YoloVer1.scores.YoloScores import *
 
 
 # global variables
@@ -82,8 +81,6 @@ def test(model, device, loader):
 
     # define some parameters
     correct_of_bbox = 0
-    missing_of_bbox = 0
-    failed_of_bbox = 0
     correct_of_class = 0
     average_of_iou = 0.
 
@@ -100,24 +97,21 @@ def test(model, device, loader):
             output = model(data)
 
             # test the model
-            hits_num, misses_num, fails_num, iou_average, failure_table = bbox_score(output, target)
-            object_num = object_score(output, target, failure_table)
+            hits_num, sum_iou, sum_classes = yolo_scores(output, target)
 
             # 统计计算结果
             correct_of_bbox += hits_num
-            missing_of_bbox += misses_num
-            failed_of_bbox += fails_num
-            correct_of_class += object_num
-            average_of_iou += iou_average
+            average_of_iou += sum_iou
+            correct_of_class += sum_classes
 
-        # 打印本论测试结果，一共预测成功多少个bbox，猜错多少个，miss多少个，成功的bbox下，预测object的正确率是多少，以及平均iou情况
+        # statistic the predication level
+        accuracy_of_iou = average_of_iou / correct_of_class
         accuracy_of_bbox = correct_of_bbox / len(loader.dataset)
         accuracy_of_class = correct_of_class / len(loader.dataset)
 
-        print("\nTest set: Average of bbox accuracy: {:.4f}, average of object accuracy: {:.4f}, average of iou: {:.4f}".format(
-            accuracy_of_bbox, accuracy_of_class, average_of_iou / len(loader.dataset)))
-        print("Bounding boxes status: hit: {}, miss: {}, failed: {}, total: {}".format(
-            correct_of_bbox, missing_of_bbox, failed_of_bbox, len(loader.dataset)))
+        print("\nTest set: Average of bbox accuracy: {:.4f}".format(accuracy_of_bbox),
+              "average of bounding box accuracy: {:.4f}".format(accuracy_of_iou),
+              "average of object accuracy: {:.4f}".format(accuracy_of_class))
 
 
 def run_train_and_test_demo():
