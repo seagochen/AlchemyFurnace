@@ -1,12 +1,13 @@
+import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
 from YoloVer100.model.YoloNetwork import YoloV1Network
-from YoloVer100.dataset.MNISTDataset import MNISTDataset, GenerateRandMNIST
-from YoloVer100.grids.YoloGrids import YoloGrids
-from YoloVer100.scores.YoloScores import *
-from YoloVer100.tools.Normalizer import *
+from Generic.dataset.MNIST.MNISTDataset import MNISTDataset, GenerateRandMNIST
+from Generic.tools.Normalizer import generic_normalize
+from Generic.grids.YoloGrids import YoloGrids
+from Generic.scores.YoloScores import yolo_scores
 
 # global variables
 epochs = 10
@@ -86,7 +87,7 @@ def test(model, data, target):
               "average of object accuracy: {:.4f}".format(accuracy_of_class))
 
 
-def run_train_and_test_demo():
+def run_quick_verification():
     # define model
     model = YoloV1Network(grids_size=grids_size,
                           confidences=confidences,
@@ -123,4 +124,4 @@ def run_train_and_test_demo():
 
 
 if __name__ == '__main__':
-    run_train_and_test_demo()
+    run_quick_verification()

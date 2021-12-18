@@ -1,12 +1,12 @@
 from typing import Callable, Optional
 
 import cv2
+import numpy as np
 from torch.utils.data import DataLoader
 from torchvision import datasets
 
-from YoloVer100.dataset.PlotMNISTImage import plot_mnist_image
-from YoloVer100.grids.YoloGrids import YoloGrids
-from YoloVer100.tools.Normalizer import *
+from Generic.dataset.MNIST.PlotMNISTImage import plot_mnist_image
+from Generic.grids.YoloGrids import YoloGrids
 
 
 class GenerateRandMNIST(object):

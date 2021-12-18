@@ -1,17 +1,19 @@
+import os
+import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
-from YoloVer100.dataset.MNISTDataset import MNISTDataset, GenerateRandMNIST
-from YoloVer100.grids.YoloGrids import YoloGrids
 from YoloVer100.model.YoloNetwork import YoloV1Network
-from YoloVer100.tools.Normalizer import *
-from YoloVer100.scores.YoloScores import *
+from Generic.dataset.MNIST.MNISTDataset import MNISTDataset, GenerateRandMNIST
+from Generic.tools.Normalizer import generic_normalize
+from Generic.grids.YoloGrids import YoloGrids
+from Generic.scores.YoloScores import yolo_scores
 
 
 # global variables
-epochs = 10
-batch_size = 4
+epochs = 30
+batch_size = 32
 grids_size = (8, 8)
 confidences = 1
 bounding_boxes = 1
@@ -21,7 +23,7 @@ object_categories = 10
 data_dir = 'data/MNIST'
 
 # model folder
-model_dir = 'model/yolo'
+model_path = 'YoloVer100/model/yolo_v100.pth'
 
 # training dataset
 train_dataset = MNISTDataset(root=data_dir, train=True, download=True,
@@ -105,9 +107,9 @@ def test(model, device, loader):
             correct_of_class += sum_classes
 
         # statistic the predication level
-        accuracy_of_iou = average_of_iou / correct_of_class
-        accuracy_of_bbox = correct_of_bbox / len(loader.dataset)
-        accuracy_of_class = correct_of_class / len(loader.dataset)
+        accuracy_of_iou = average_of_iou
+        accuracy_of_bbox = correct_of_bbox
+        accuracy_of_class = correct_of_class
 
         print("\nTest set: Average of bbox accuracy: {:.4f}".format(accuracy_of_bbox),
               "average of bounding box accuracy: {:.4f}".format(accuracy_of_iou),
@@ -127,13 +129,18 @@ def run_train_and_test_demo():
     # define device
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+    # load model parameters if exist
+    if os.path.exists(model_path):
+        model.load_state_dict(torch.load(model_path))
+        print("load model parameters successfully!")
+
     # train model
     for epoch in range(1, epochs + 1):
         train(model, device, train_loader, optimizer, epoch)
         test(model, device, test_loader)
 
     # save model
-    torch.save(model.state_dict(), '{}/yolo_v100.pt'.format(model_dir))
+    torch.save(model.state_dict(), model_path)
     print('Model saved!')
     print('Done!')
 

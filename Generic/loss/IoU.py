@@ -62,7 +62,7 @@ def compute_union_area(pred, true, inter_area):
     return area_union
 
 
-def compute_iou(pred, true):
+def __compute_iou(pred, true):
     # get the size
     B, _, N = pred.size()
 
@@ -83,23 +83,60 @@ def compute_iou(pred, true):
     return iou.reshape(B, N)
 
 
+def compute_iou(pred, true):
+    # get the size
+    _, C, _ = pred.size()
+
+    # how many boxes are there in total
+    boxes = C // 4
+
+    # create a list for the IoU
+    iou_list = []
+
+    # iterate over each box
+    for i in range(boxes):
+        iou = __compute_iou(pred[:, i * 4: i * 4 + 4, :], true[:, i * 4: i * 4 + 4, :])
+        iou_list.append(iou)
+
+    # stack the list together
+    if len(iou_list) > 1:
+        iou = torch.stack(iou_list, dim=1)
+        return iou
+    else:
+        return iou_list[0]
+
+
+def reduction_of_iou(iou, reduction="sum"):
+    # get the size of iou
+    B, C, N = iou.size()
+
+    # compute the reduction
+    if reduction == "sum":
+        reduction = torch.sum(iou, dim=1)
+        return reduction
+    elif reduction == "mean":
+        reduction = torch.sum(iou, dim=1)
+        reduction = reduction / C
+        return reduction
+    elif reduction == "max":
+        values, indices = torch.max(iou, dim=1)
+        return values, indices
+    elif reduction == "min":
+        values, indices = torch.min(iou, dim=1)
+        return values, indices
+
+
 def test():
     # create a batch of boxes
-    boxes_true = torch.tensor([
-        [0.5, 0.5, 0.1, 0.1],
-        [0.3, 0.3, 0.4, 0.4],
-        [0.3, 0.3, 0.4, 0.4]
-    ]).transpose(0, 1).reshape(1, 4, -1)
-
-    boxes_pred = torch.tensor([
-        [0.5, 0.5, 0.1, 0.1],
-        [0.0, 0.0, 0.0, 0.0],
-        [0.9, 0.9, 0.4, 0.4]
-    ]).transpose(0, 1).reshape(1, 4, -1)
+    boxes_true = torch.rand(2, 8, 2)
+    boxes_pred = torch.rand(2, 8, 2)
 
     # compute the IoU
     iou = compute_iou(boxes_pred, boxes_true)
-    print(iou)
+    print(iou[:, 0, :], "\n", iou[:, 1, :])
+
+    iou = reduction_of_iou(iou, reduction="max")
+    print(iou[0])
 
 
 if __name__ == "__main__":
