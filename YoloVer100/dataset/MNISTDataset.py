@@ -4,9 +4,9 @@ import cv2
 from torch.utils.data import DataLoader
 from torchvision import datasets
 
-from YoloVer1.dataset.PlotMNISTImage import plot_mnist_image
-from YoloVer1.grids.YoloGrids import YoloGrids
-from YoloVer1.tools.Normalizer import *
+from YoloVer100.dataset.PlotMNISTImage import plot_mnist_image
+from YoloVer100.grids.YoloGrids import YoloGrids
+from YoloVer100.tools.Normalizer import *
 
 
 class GenerateRandMNIST(object):

@@ -2,11 +2,11 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
-from YoloVer1.dataset.MNISTDataset import MNISTDataset, GenerateRandMNIST
-from YoloVer1.grids.YoloGrids import YoloGrids
-from YoloVer1.model.YoloNetwork import YoloV1Network
-from YoloVer1.tools.Normalizer import *
-from YoloVer1.scores.YoloScores import *
+from YoloVer100.dataset.MNISTDataset import MNISTDataset, GenerateRandMNIST
+from YoloVer100.grids.YoloGrids import YoloGrids
+from YoloVer100.model.YoloNetwork import YoloV1Network
+from YoloVer100.tools.Normalizer import *
+from YoloVer100.scores.YoloScores import *
 
 
 # global variables
@@ -18,10 +18,10 @@ bounding_boxes = 1
 object_categories = 10
 
 # data folder
-data_dir = 'YoloVer1/data/MNIST'
+data_dir = 'data/MNIST'
 
 # model folder
-model_dir = 'YoloVer1/model/'
+model_dir = 'model/yolo'
 
 # training dataset
 train_dataset = MNISTDataset(root=data_dir, train=True, download=True,
@@ -133,7 +133,7 @@ def run_train_and_test_demo():
         test(model, device, test_loader)
 
     # save model
-    torch.save(model.state_dict(), '{}/saved_model.pt'.format(model_dir))
+    torch.save(model.state_dict(), '{}/yolo_v100.pt'.format(model_dir))
     print('Model saved!')
     print('Done!')
 

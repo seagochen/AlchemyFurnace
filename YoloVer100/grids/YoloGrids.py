@@ -1,5 +1,5 @@
 import torch
-from YoloVer1.grids.BoundingBox import grids_coord, yolo_coord
+from YoloVer100.grids.BoundingBox import grids_coord, yolo_coord
 
 
 def set_value(tensor, grid_i, grid_j, cell_ind, value):

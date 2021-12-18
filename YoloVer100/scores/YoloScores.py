@@ -1,8 +1,8 @@
 import torch
 
-from YoloVer1.loss.IoU import compute_iou
-from YoloVer1.tools.TorchSetOp import *
-from YoloVer1.tools.DebugTools import *
+from YoloVer100.loss.IoU import compute_iou
+from YoloVer100.tools.TorchSetOp import *
+from YoloVer100.tools.DebugTools import *
 
 
 def yolo_scores(output: torch.Tensor, target: torch.Tensor, threshold: float = 0.5,
@@ -50,8 +50,8 @@ def yolo_scores(output: torch.Tensor, target: torch.Tensor, threshold: float = 0
 
 
 if __name__ == "__main__":
-    from YoloVer1.model.YoloNetwork import *
-    from YoloVer1.tools.FakeGrid import *
+    from YoloVer100.model.YoloNetwork import *
+    from YoloVer100.tools.FakeGrid import *
 
     # # create a model
     # grids_size = (8, 8)

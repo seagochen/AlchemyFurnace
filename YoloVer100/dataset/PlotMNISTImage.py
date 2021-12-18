@@ -4,8 +4,8 @@ import cv2
 import numpy as np
 import torch
 
-from YoloVer1.grids.BoundingBox import yolo_coord
-from YoloVer1.tools.ImagePlotter import mark_detected_obj
+from YoloVer100.grids.BoundingBox import yolo_coord
+from YoloVer100.tools.ImagePlotter import mark_detected_obj
 
 
 def round_pts(pts):
