@@ -65,12 +65,12 @@ def grids_coord(rect_pts: tuple, spatial_size: tuple, grids_size: tuple, alpha=0
             "grid_i": grid_x, "grid_j": grid_y}
 
 
-def yolo_coord(pts: any, grid_size: tuple, alpha=0., beta=1., gamma=1.) -> tuple:
+def yolo_coord(pts: any, grids_size: tuple, alpha=0., beta=1., gamma=1.) -> tuple:
     """
     对于类似于YOLO的bbox表示方式（网格引索，相对中心点坐标，bbox长宽）转化为一般的bbox坐标（左上角坐标，右下角坐标）
 
     :param pts: YOLO bbox (cent_x, cent_y, width, height, grid_i, grid_j)
-    :param grid_size: 网格尺寸，类型为tuple(x grids, y grids)
+    :param grids_size: 网格尺寸，类型为tuple(x grids, y grids)
     :param alpha: 映射的起始值
     :param beta: 映射的终止值
     :param gamma: 映射的缩放系数
@@ -79,8 +79,8 @@ def yolo_coord(pts: any, grid_size: tuple, alpha=0., beta=1., gamma=1.) -> tuple
 
     # 计算中心点的绝对坐标
     cent_x, cent_y = pts[0] + pts[4], pts[1] + pts[5]
-    cent_x /= grid_size[0]
-    cent_y /= grid_size[1]
+    cent_x /= grids_size[0]
+    cent_y /= grids_size[1]
 
     # 左上角的绝对坐标
     lt_x, lt_y = cent_x - pts[2] / 2, cent_y - pts[3] / 2
@@ -103,5 +103,5 @@ if __name__ == "__main__":
         res["cent_x_rel"], res["cent_y_rel"],
         res["rb_x"] - res["lt_x"], res["rb_y"] - res["lt_y"],
         res["grid_i"], res["grid_j"]
-    ), grid_size=(10, 10), gamma=100)
+    ), grids_size=(10, 10), gamma=100)
     print(temp)

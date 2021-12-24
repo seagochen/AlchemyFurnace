@@ -1,18 +1,19 @@
 import cv2
 import numpy as np
+from typing import List, Tuple, Union
 
 
 def mark_detected_obj(image: np.ndarray,
-                      text: str, text_pt: [tuple, list], font_size: int, font_color: [tuple, list],
-                      bbox: [tuple, list], box_color: [tuple, list]):
+                      text: str, text_coord: Union[Tuple, List], font_size: int, font_color: Union[Tuple, List],
+                      bbox_coord: Union[Tuple, List], box_color: Union[Tuple, List]):
     """
     绘制带 bounding box 的图片
     :param image: BGR 彩色图片
     :param text: 绘制的文字
-    :param text_pt: 文字的左上角坐标
+    :param text_coord: 文字的左上角坐标
     :param font_size: 字体大小
     :param font_color: 字体颜色
-    :param bbox: bounding box 坐标（左上角坐标，右下角坐标）
+    :param bbox_coord: bounding box 坐标（左上角坐标，右下角坐标）
     :param box_color: bounding box 颜色
     :return:
     """
@@ -21,14 +22,14 @@ def mark_detected_obj(image: np.ndarray,
     image_copy = image.copy()
 
     # calculate left-top: x left_down: y of bonding box
-    pt1 = bbox[:2]
-    pt2 = bbox[2:]
+    pt1 = bbox_coord[:2]
+    pt2 = bbox_coord[2:]
 
     # draw bounding box with default line width 2
     image_copy = cv2.rectangle(image_copy, pt1, pt2, box_color, 2)
 
     # draw text on image
-    image_copy = cv2.putText(image_copy, text, text_pt, cv2.FONT_HERSHEY_SIMPLEX, font_size, font_color, 2)
+    image_copy = cv2.putText(image_copy, text, text_coord, cv2.FONT_HERSHEY_SIMPLEX, font_size, font_color, 2)
 
     # return image
     return image_copy

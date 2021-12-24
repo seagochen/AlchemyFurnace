@@ -59,7 +59,7 @@ def derive_bounding_box(yolo_grids: torch.Tensor,
                 # 把坐标信息从中心点转换为左上、右下角点坐标
                 last_box = yolo_coord((
                     coord[0], coord[1], coord[2], coord[3], i, j
-                ), grid_size=grids_size, gamma=gamma)
+                ), grids_size=grids_size, gamma=gamma)
 
     last_box = round_pts(last_box)
     return last_box
@@ -166,9 +166,9 @@ def plot_mnist_image(images: torch.Tensor, marks: torch.Tensor,
         # draw the final image
         if bbox is not None and label is not None:
             marked_img = mark_detected_obj(image=img,
-                                           text=label, text_pt=(bbox[0], bbox[3]), font_size=1,
+                                           text=label, text_coord=(bbox[0], bbox[3]), font_size=1,
                                            font_color=(0, 255, 255),
-                                           bbox=bbox, box_color=(255, 0, 0))
+                                           bbox_coord=bbox, box_color=(255, 0, 0))
         else:
             marked_img = img
 
